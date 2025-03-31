@@ -23,3 +23,9 @@ We are writing a programmig language that manipulates vectors and matrices. Our 
 ## Tasks
 
 ## Problems Faced
+
+## Instructions to run
+1. Change Input file name in test.ml
+2. Run `make test` to compile the code and test
+3. Check output.txt for the output
+P.S.: Run `(& opam env) -split '\r?\n' | ForEach-Object { Invoke-Expression $_ }` in powershell to set the environment variables.
