@@ -54,7 +54,7 @@ let rec dot_product_float list1 list2 =
 
 let length list = Float.sqrt (dot_product_float list list);;
 
-let angle v1 v2 = 
+let angle v1 v2 =  (*angle in rads*)
   if (length v1 = 0. || length v2 = 0.) then 
     raise DivisionBy0
   else

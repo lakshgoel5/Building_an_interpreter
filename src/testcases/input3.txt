@@ -11,4 +11,15 @@ float k := 4.3;
 k := sqrt(k);
 Print(k);
 
-k := Input(hello.txt);
+k := Input();
+Print(k);
+
+vectori 3 vv := Input(hello.txt);
+Print(vv);
+
+int w:= vv[2];
+Print(w);
+
+matrixi 4 5 m := 4,5[[0,1,2,3,4];[5,6,7,8,9];[10,11,12,13,14];[15,16,17,18,19]];
+int r:= m[1,2];
+Print(r);

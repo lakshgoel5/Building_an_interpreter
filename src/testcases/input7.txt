@@ -1,0 +1,8 @@
+vectori 3 v1 := 3[2, 4, 5];
+vectori 3 v2 := 3[5, 7, 8];
+int i := v1 dotprod v2;
+Print(i);
+float a:= v1 angle v2;
+float b:= mag(v1);
+Print(a);
+Print(b);

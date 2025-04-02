@@ -490,7 +490,7 @@ let rec type_check (exp : Ast.exp) (symbol_table : data_type SymbolTable.t) = ma
 		let t2 = type_check e2 symbol_table in
 		begin match (t1, t2) with
 		| (TVectorf dim1, TVectorf dim2) -> if (dim1 = dim2 && dim1 <> 0) then TFloat else raise (TypeError (IncompatibleDimensions ("dotprod", TVectorf dim1, TVectorf dim2)))  (* Dot product of two vectors is a scalar (float) *)
-		| (TVectori dim1, TVectori dim2) -> if (dim1 = dim2 && dim1 <> 0) then TFloat else raise (TypeError (IncompatibleDimensions ("dotprod", TVectori dim1, TVectori dim2)))  (* Dot product of two vectors is a scalar (float) *)
+		| (TVectori dim1, TVectori dim2) -> if (dim1 = dim2 && dim1 <> 0) then TInt else raise (TypeError (IncompatibleDimensions ("dotprod", TVectori dim1, TVectori dim2)))  (* Dot product of two vectors is a scalar (float) *)
 		| _ -> raise (TypeError (TypeMismatch ("dot product", t1, t2)))
 		end
   

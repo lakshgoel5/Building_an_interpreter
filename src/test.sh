@@ -7,7 +7,7 @@ EXECUTABLE="./main.exe"
 mkdir -p testcases
 
 # Process each input file from 1 to 10
-for i in {1..6}; do
+for i in {1..10}; do
     INPUT_FILE="testcases/input$i.txt"
     OUTPUT_FILE="testcases/expected_input$i.txt"
     
