@@ -1,5 +1,6 @@
 open Ast
 open Environment
+open Operations
 
 (*env is gamma*)
 (**)
@@ -12,9 +13,9 @@ let rec eval_with_env env ast =
 
   | Const_Int i -> (env, Const_Int i)
   | Const_Float f -> (env, Const_Float f)
+  | Const_Bool b -> (env, Const_Bool b)
   | Const_Vector_int (d,v) -> (env, Const_Vector_int (d,v))
   | Const_Vector_float (d,v) -> (env, Const_Vector_float (d,v))
-  | Const_Bool b -> (env, Const_Bool b)
   | Const_Matrix_float (r, c, m) -> (env, Const_Matrix_float (r, c, m))
   | Const_Matrix_int (r, c, m) -> (env, Const_Matrix_int (r, c, m))
   
@@ -79,6 +80,38 @@ let rec eval_with_env env ast =
         (new_env, v2)
       | _ -> raise (Failure "Type mismatch: expected vector float"))
 
+  | Assign(Matrixi(d1,d2,e1), e2) ->
+    let v2 = eval env e2 in
+    (match v2 with
+      | Const_Matrix_int (dm1, dm2, m) -> (* No need to check dimension, already done *)
+        (* Explicit pattern matching inside List.map to avoid partial match warning *)
+        let matrix_values = List.map (fun row -> 
+          List.map (fun x -> match x with
+            | Const_Int i -> i
+            | _ -> failwith "Type error: Expected only int values in matrix"
+          ) row
+        ) m in
+        let new_env = Environment.extend env e1 (VMatrixi (d1, d2, matrix_values)) in
+        (new_env, v2)
+      | _ -> raise (Failure "Type mismatch: expected matrix int")
+    )
+    
+  | Assign(Matrixf(d1,d2,e1), e2) ->
+    let v2 = eval env e2 in
+    (match v2 with
+      | Const_Matrix_float (dm1, dm2, m) -> (* No need to check dimension, already done *)
+        (* Explicit pattern matching inside List.map to avoid partial match warning *)
+        let matrix_values = List.map (fun row -> 
+          List.map (fun x -> match x with
+            | Const_Float i -> i
+            | _ -> failwith "Type error: Expected only float values in matrix"
+          ) row
+        ) m in
+        let new_env = Environment.extend env e1 (VMatrixf (d1, d2, matrix_values)) in
+        (new_env, v2)
+      | _ -> raise (Failure "Type mismatch: expected matrix float")
+    )
+  
   | Assign(Variable name, e2) ->
     let v2 = eval env e2 in
     let valu = Environment.lookup env name in
@@ -109,20 +142,46 @@ let rec eval_with_env env ast =
         let new_env = Environment.extend env name (VMatrixf (r, c, mat_values)) in
         (new_env, v2)
       | _ -> raise (Failure "Type mismatch: variable type does not match"))
+
+  | Assign (_, _) -> raise (Failure "Invalid Assignment")
   
   | Print(e) ->
     let v = eval env e in
     (match v with
-     | Const_Int i -> Printf.printf "%d\n" i; (env, v)
-     | Const_Float f -> Printf.printf "%f\n" f; (env, v)
-     | Const_Bool b -> Printf.printf "%b\n" b; (env, v)
-     | Const_Vector_int (d, l) -> 
-         let str_values = String.concat ", " (List.map (fun x -> match x with Const_Int i -> string_of_int i | _ -> "") l) in
-         Printf.printf "Vector of dimension %d: %s\n" d str_values; (env, v)
-     | Const_Vector_float (d, l) -> 
-         let str_values = String.concat ", " (List.map (fun x -> match x with Const_Float f -> string_of_float f | _ -> "") l) in
-         Printf.printf "Vector of dimension %d: %s\n" d str_values; (env, v)
-     | _ -> raise (Failure "Unsupported type for printing"))
+      | Const_Int i -> Printf.printf "%d\n" i; (env, v)
+      | Const_Float f -> Printf.printf "%f\n" f; (env, v)
+      | Const_Bool b -> Printf.printf "%b\n" b; (env, v)
+      | Const_Vector_int (d, l) -> 
+          let str_values = String.concat ", " (List.map (fun x -> match x with Const_Int i -> string_of_int i | _ -> "") l) in
+          Printf.printf "Vector of dimension %d: [%s]\n" d str_values; (env, v)
+      | Const_Vector_float (d, l) -> 
+          let str_values = String.concat ", " (List.map (fun x -> match x with Const_Float f -> string_of_float f | _ -> "") l) in
+          Printf.printf "Vector of dimension %d: [%s]\n" d str_values; (env, v)
+      | Const_Matrix_int (d1, d2, m) ->
+        let row_strings = List.map (fun row -> 
+          String.concat ", " 
+            (List.map (fun x -> match x with  (*matching necessary, else it gives pattern matchng warning*)
+                | Const_Int i -> string_of_int i 
+                | _ -> failwith "Type error: Expected only int values in matrix")
+            row)
+        ) m in
+        Printf.printf "Matrix of dimension %d %d:[\n" d1 d2;
+        List.iter (fun row -> Printf.printf "[%s]\n" row) row_strings;
+        Printf.printf "]\n"; (env, v)
+        
+      | Const_Matrix_float (d1, d2, m) ->
+        let row_strings = List.map (fun row -> 
+          String.concat ", " 
+            (List.map (fun x -> match x with 
+                | Const_Float f -> string_of_float f 
+                | _ -> failwith "Type error: Expected only float values in matrix")
+            row)
+        ) m in
+        Printf.printf "Matrix of dimension %d %d:[\n" d1 d2;
+        List.iter (fun row -> Printf.printf "[%s]\n" row) row_strings;
+        Printf.printf "]\n"; (env, v)
+    
+      | _ -> raise (Failure "Unsupported type for printing"))
   
   | Add (e1, e2) ->
     let v1 = eval env e1 in
@@ -414,6 +473,11 @@ let rec eval_with_env env ast =
       (env, Const_Bool res)
     | _ -> raise (Failure "Type mismatch in not equal to operation"))
 
+  | Remainder (e1, e2) ->
+    (match (eval env e1, eval env e2) with
+    | (Const_Int v1, Const_Int v2) -> (env, Const_Int (v1 mod v2))
+    | _ -> failwith "Type error: Expected integer expressions for remainder operation")
+  
   | Conjunction (e1, e2) ->
     let v1 = eval env e1 in
     let v2 = eval env e2 in
@@ -430,10 +494,201 @@ let rec eval_with_env env ast =
     let v1 = eval env e1 in
     (match v1 with
     | Const_Bool b1 -> (env, Const_Bool (not b1))
-    | _ -> raise (Failure "Type mismatch in negation operation"))    
+    | _ -> raise (Failure "Type mismatch in negation operation"))
     
-  | _ -> raise (Failure "Unsupported operation")
+  | Raise s -> raise (Failure s)
+  | If (e1, e2, e3) ->
+    (match eval env e1 with
+    | Const_Bool v1 ->
+        if v1 then
+          let v2 = eval env e2 in
+          (env, v2)
+        else
+          let v3 = eval env e3 in
+          (env, v3)
+    | _ -> failwith "Type error: Expected a boolean expression in if condition")
 
+  | While (e1, e2) ->
+    let rec loop env =
+      (match eval_with_env env e1 with
+      | (new_env, Const_Bool v1) ->
+          if v1 then
+            let (nenv, v2) = eval_with_env new_env e2 in
+            loop nenv
+          else
+            (env, Const_Bool true)
+      | _ -> failwith "Type error: Expected a boolean expression in while condition")
+    in
+    loop env
+
+  | For (e1, e2, e3, e4) ->
+    let (init_env,v1) = eval_with_env env e1 in
+    let rec loop env =
+      (match eval_with_env env e2 with
+        | (new_env, Const_Bool v2) ->
+          if v2 then
+            let (nenv, v4) = eval_with_env new_env e4 in
+            let (menv, v3) = eval_with_env nenv e3 in
+            loop menv
+          else
+            (new_env, Const_Bool true)
+        | _ -> failwith "Type error: Expected a boolean 2nd expression in for loop")
+    in loop init_env
+
+  | Abs e1 ->
+    let v1 = eval env e1 in
+    (match v1 with
+    | Const_Int i -> (env, Const_Int (abs i))
+    | Const_Float f -> (env, Const_Float (abs_float f))
+    | _ -> raise (Failure "Abs can be applied only on Ints and Floats"))
+
+  | Sqrt e1 ->
+    let v1 = eval env e1 in
+    (match v1 with
+    | Const_Int i -> if i < 0 then raise (Failure "Sqrt of negative number") else (env, Const_Float (sqrt (float_of_int i)))
+    | Const_Float f -> if f < 0.0 then raise (Failure "Sqrt of negative number") else (env, Const_Float (sqrt f))
+    | _ -> raise (Failure "Sqrt can be applied only on Ints and Floats"))
+
+  | Pow (e1, e2) ->
+    let v1 = eval env e1 in
+    let v2 = eval env e2 in
+    (match (v1,v2) with
+    | (Const_Int i1, Const_Int i2) -> (env, Const_Int (int_of_float ((float_of_int i1) ** (float_of_int i2))))
+    | (Const_Float f1, Const_Float f2) -> (env, Const_Float (f1 ** f2))
+    | (Const_Int i1, Const_Float f2) -> (env, Const_Float ((float_of_int i1) ** f2))
+    | (Const_Float f1, Const_Int i2) -> (env, Const_Float (f1 ** (float_of_int i2)))
+    | _ -> raise (Failure "Pow can be applied only on Ints and Floats"))
+
+  | Log (e1, e2) ->
+    let v1 = eval env e1 in
+    let v2 = eval env e2 in
+    (match (v1,v2) with
+    | (Const_Int i1, Const_Int i2) -> if i1 <= 0 || i2 <= 1 then raise (Failure "Log base and value must be > 0 and base != 1") else (env, Const_Float (log (float_of_int i1) /. log (float_of_int i2)))
+    | (Const_Float f1, Const_Float f2) -> if f1 <= 0.0 || f2 <= 1.0 then raise (Failure "Log base and value must be > 0 and base != 1") else (env, Const_Float (log f1 /. log f2))
+    | (Const_Int i1, Const_Float f2) -> if i1 <= 0 || f2 <= 1.0 then raise (Failure "Log base and value must be > 0 and base != 1") else (env, Const_Float (log (float_of_int i1) /. log f2))
+    | (Const_Float f1, Const_Int i2) -> if f1 <= 0.0 || i2 <= 1 then raise (Failure "Log base and value must be > 0 and base != 1") else (env, Const_Float (log f1 /. log (float_of_int i2)))
+    | _ -> raise (Failure "Log can be applied only on Ints and Floats"))
+
+  | Row e1 -> 
+    let v1 = eval env e1 in
+    (match v1 with
+    | Const_Matrix_int (d1, d2, m) -> (env, Const_Int (d1))
+    | Const_Matrix_float (d1, d2, m) -> (env, Const_Int (d1))
+    | _ -> raise (Failure "Row can be applied only on Matrices"))
+
+  | Cols e1 -> 
+    let v1 = eval env e1 in
+    (match v1 with
+    | Const_Matrix_int (d1, d2, m) -> (env, Const_Int (d2))
+    | Const_Matrix_float (d1, d2, m) -> (env, Const_Int (d2))
+    | _ -> raise (Failure "Cols can be applied only on Matrices"))
+
+  | Dimension e1 -> 
+    let v1 = eval env e1 in
+    (match v1 with
+    | Const_Vector_int (d, s) -> (env, Const_Int (d))
+    | Const_Vector_float (d, s) -> (env, Const_Int (d))
+    | _ -> raise (Failure "Dimension can be applied only on Vectors"))
+  
+  | CreateEmpty (d1, d2) -> (*Only support floats*)
+    (match (d1, d2) with
+    | (Const_Int i1, Const_Int i2) when i1 > 0 && i2 > 0 -> (env, Const_Matrix_float (i1, i2, List.init i1 (fun _ -> List.init i2 (fun _ -> Const_Float 0.0))))
+    | _ -> raise (Failure "CreateEmpty can be applied only on positive Ints"))
+
+  | DotProd (e1, e2) ->
+    let v1 = eval env e1 in
+    let v2 = eval env e2 in
+    (match (v1,v2) with
+    | (Const_Vector_int (d, s1), Const_Vector_int (d1, s2)) -> let res = Operations.dot_product_int (Operations.exp_list_to_int_list s1) (Operations.exp_list_to_int_list s2) in (env, Const_Int res)
+    | (Const_Vector_float (d, s1), Const_Vector_float (d1, s2)) -> let res = Operations.dot_product_float (Operations.exp_list_to_float_list s1) (Operations.exp_list_to_float_list s2) in (env, Const_Float res)
+    | _ -> raise (Failure "Type mismatch in dot product operation"))
+
+  | Angle (e1, e2) -> (*Always return float*)
+    let v1 = eval env e1 in
+    let v2 = eval env e2 in
+    (match (v1,v2) with
+    | (Const_Vector_int (d, s1), Const_Vector_int (d1, s2)) -> let res = Operations.angle (Operations.exp_list_to_float_list s1) (Operations.exp_list_to_float_list s2) in (env, Const_Float res)
+    | (Const_Vector_float (d, s1), Const_Vector_float (d1, s2)) -> let res = Operations.angle (Operations.exp_list_to_float_list s1) (Operations.exp_list_to_float_list s2) in (env, Const_Float res)
+    | _ -> raise (Failure "Type mismatch in angle operation"))
+
+  | Transpose e1 ->
+    let v1 = eval env e1 in
+    (match v1 with
+    | Const_Matrix_int (r, c, m) -> let res = Operations.transpose m in (env, Const_Matrix_int (c, r, res))
+    | Const_Matrix_float (r, c, m) -> let res = Operations.transpose m in (env, Const_Matrix_float (c, r, res))
+    | _ -> raise (Failure "Transpose can be applied only on Matrices"))
+
+  | Mag e1 -> (*Always return float*)
+    let v1 = eval env e1 in
+    (match v1 with
+    | Const_Vector_int (d, s) -> let res = Operations.magnitude (Operations.exp_list_to_float_list s) in (env, Const_Float res)
+    | Const_Vector_float (d, s) -> let res = Operations.magnitude (Operations.exp_list_to_float_list s) in (env, Const_Float res)
+    | _ -> raise (Failure "Magnitude can be applied only on Vectors"))
+
+  | Determinant e1 ->
+    let v1 = eval env e1 in
+    (match v1 with
+    | Const_Matrix_int (r, c, m) -> let res = Operations.determinant_int (exp_matrix_to_int_matrix m) in (env, Const_Int res)
+    | Const_Matrix_float (r, c, m) -> let res = Operations.determinant_float (exp_matrix_to_float_matrix m) in (env, Const_Float res)
+    | _ -> raise (Failure "Determinant can be applied only on Matrices"))
+
+  | Minor (e1, e2, e3) -> (*Matrix, index1, index2*)
+    let v1 = eval env e1 in
+    let v2 = eval env e2 in
+    let v3 = eval env e3 in
+    (match (v1,v2,v3) with
+    | (Const_Matrix_int (r, c, m), Const_Int i1, Const_Int i2) -> let res = (Operations.minor m i1 i2) in (env, Const_Matrix_int (r-1, c-1, res))
+    | (Const_Matrix_float (r, c, m), Const_Int i1, Const_Int i2) -> let res = (Operations.minor m i1 i2) in (env, Const_Matrix_float (r-1, c-1, res))
+    | _ -> raise (Failure "Minor can be applied only on Matrices"))
+
+  | Inverse e1 ->
+    let v1 = eval env e1 in
+    (match v1 with
+    | Const_Matrix_int (r, c, m) -> let res = Operations.float_matrix_to_exp_matrix (Operations.inverse (exp_matrix_to_float_matrix m)) in (env, Const_Matrix_float (r, c, res))
+    | Const_Matrix_float (r, c, m) -> let res = Operations.float_matrix_to_exp_matrix (Operations.inverse (exp_matrix_to_float_matrix m)) in (env, Const_Matrix_float (r, c, res))
+    | _ -> raise (Failure "Inverse can be applied only on Matrices"))
+
+  | Input ->
+    let input = read_line () in
+    let lexbuf = Lexing.from_string input in
+    let ast = Parser.top Calc.tokenize lexbuf in
+    let result = eval env ast in
+    (env, result)
+
+  | Inputf(Filename (s)) -> (*s is a string*)
+    let chan = open_in s in
+    let lexbuf = Lexing.from_channel chan in
+    let ast = Parser.top Calc.tokenize lexbuf in
+    let result = eval env ast in
+    (env, result)
+  
+  | Inputf (_) -> raise (Failure "Not a valid input format")
+  | Filename (_) -> (env, Const_Bool true)
+  | AccessMatrix(s, e1, e2) ->
+    let v1 = eval env e1 in
+    let v2 = eval env e2 in
+    (match (v1,v2) with
+    | Const_Int r, Const_Int c ->
+      (match Environment.lookup env s with
+      | Some (VMatrixi (rows, cols, m)) when r >= 0 && r < rows && c >= 0 && c < cols ->
+        (env, Const_Int (List.nth (List.nth m r) c))
+      | Some (VMatrixf (rows, cols, m)) when r >= 0 && r < rows && c >= 0 && c < cols ->
+        (env, Const_Float (List.nth (List.nth m r) c))
+      | _ -> raise (Failure "Invalid access or out of bounds"))
+    | _, _ -> raise (Failure "Only Intigers allowed in access"))
+
+  | AccessVector(s, e) -> 
+    let v = eval env e in
+    (match v with
+    | Const_Int i ->
+      (match Environment.lookup env s with
+      | Some (VVectori (dim, vec)) when i >= 0 && i < dim ->
+        (env, Const_Int (List.nth vec i))
+      | Some (VVectorf (dim, vec)) when i >= 0 && i < dim ->
+        (env, Const_Float (List.nth vec i))
+      | _ -> raise (Failure "Invalid access or out of bounds"))
+    | _ -> raise (Failure "Only integers allowed in access"))
+  
 and eval env ast =
   let (_, result) = eval_with_env env ast in
   result

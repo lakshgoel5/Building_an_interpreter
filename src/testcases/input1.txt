@@ -1,8 +1,7 @@
-vectori 2 x;
-x:=2[1,2];
-vectori 3 z;
-z:=3[1,2,4];
+matrixf 2 2 x:= 2  ,2 [[1.,2.];[3.,4.]];
 Print(x);
-bool y;
-y:=(x==z);
+int y := 4%3;
 Print(y);
+raise(WrongRaise);
+bool z := true;
+Print(z);

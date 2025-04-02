@@ -1,0 +1,2 @@
+matrixf 3 4 x:= create_empty(3,4);
+Print(x);

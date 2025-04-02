@@ -1,0 +1,4 @@
+float f := pow(2.0, 3.0);
+Print(f);
+float j := log(11,10);
+Print(j);

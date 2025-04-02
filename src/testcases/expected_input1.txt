@@ -1,0 +1,7 @@
+Type checking passed successfully!
+Matrix of dimension 2 2:[
+[1., 2.]
+[3., 4.]
+]
+1
+Error: WrongRaise

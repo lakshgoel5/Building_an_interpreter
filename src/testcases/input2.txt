@@ -1,0 +1,8 @@
+int y:=2;
+if (true&&false) then {
+    int x:=y+1;
+    Print(x);
+}
+else{
+    Print(y);
+}

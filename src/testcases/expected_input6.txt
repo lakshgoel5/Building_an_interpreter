@@ -1,0 +1,6 @@
+Type checking passed successfully!
+Matrix of dimension 3 4:[
+[0., 0., 0., 0.]
+[0., 0., 0., 0.]
+[0., 0., 0., 0.]
+]

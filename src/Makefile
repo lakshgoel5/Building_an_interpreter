@@ -11,8 +11,8 @@ test_ast: all
 	./ast_test.exe
 
 test_eval: all
-	ocamlc -o main.exe ast.ml typechecker.ml utils.ml parser.mli parser.ml calc.ml environment.ml interpreter.ml main.ml
-	./main.exe 
+	ocamlc -o main.exe ast.ml typechecker.ml utils.ml parser.mli parser.ml calc.ml environment.ml operations.ml interpreter.ml main.ml
+	bash ./test.sh
 
 clean:
 	rm -f *.cm* *.o *.mli dsl calc.ml parser.ml main *.exe parser.output
