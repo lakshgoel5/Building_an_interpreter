@@ -1,0 +1,5 @@
+vectori 4 vector;
+vectori 4 scaled;
+vector := 4[1,2,3,4];
+scaled := vector * 2;
+Print(scaled);

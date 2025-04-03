@@ -1,0 +1,18 @@
+(*Check if a number is prime*)
+int n;
+bool is_prime;
+int i;
+int dummyVar;
+n := 29;
+is_prime := true;
+i := 2;
+while((i * i) <= n) {
+    if(n % i == 0) then {
+        is_prime := false;
+    }
+    else {
+        dummyVar := 0;
+    };
+    i := i + 1;
+};
+Print(is_prime);

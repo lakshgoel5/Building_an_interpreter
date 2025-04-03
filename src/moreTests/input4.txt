@@ -1,0 +1,7 @@
+bool x;
+bool y;
+bool result;
+x := true;
+y := false;
+result := x && !y;
+Print(result);

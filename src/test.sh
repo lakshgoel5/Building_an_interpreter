@@ -41,3 +41,20 @@ for i in {1..11}; do
         echo "Error processing $INPUT_FILE"
     fi
 done
+
+for i in {1..8}; do
+    INPUT_FILE="moreTests/input$i.txt"
+    OUTPUT_FILE="moreTests/output$i.txt"
+    
+    echo "Processing $INPUT_FILE -> $OUTPUT_FILE"
+    
+    # Modify this command to point to your actual OCaml executable
+    # and adjust any arguments it needs
+    $EXECUTABLE "$INPUT_FILE" > "$OUTPUT_FILE" 2>&1
+    
+    if [ $? -eq 0 ]; then
+        echo "Successfully processed $INPUT_FILE"
+    else
+        echo "Error processing $INPUT_FILE"
+    fi
+done
