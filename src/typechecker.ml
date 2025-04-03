@@ -427,7 +427,7 @@ let rec type_check (exp : Ast.exp) (symbol_table : data_type SymbolTable.t) = ma
 		| TMatrixi (r, c) ->
 			if r <> c then
 				raise (TypeError (InvalidOperation "Determinant requires a square matrix"))
-			else TFloat
+			else TInt
 		| _ -> raise (TypeError (TypeMismatch ("determinant", TMatrixf (0, 0), t)))
 		end
 

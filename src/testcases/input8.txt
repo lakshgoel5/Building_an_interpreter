@@ -1,0 +1,8 @@
+vectori 3 v1 := 3[2, 4, 5];
+vectori 3 v2 := 3[5, 7, 8];
+int i := 1;
+int j := v1[i] + v2[i];
+Print(j);
+int m:= 0;
+int k := 3/m;
+Print(k);

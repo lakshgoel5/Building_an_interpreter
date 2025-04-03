@@ -1,0 +1,4 @@
+vectori 3 v := 3[0,0,0];
+vectori 3 v2 := 3[1,2,3];
+float f:= v angle v2;
+Print(f);

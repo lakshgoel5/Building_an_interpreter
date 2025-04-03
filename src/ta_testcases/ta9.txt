@@ -1,0 +1,7 @@
+vectori 3 vector_sum := 3[0, 0, 0];
+matrixi 5 3 V;
+V := Input();
+for (int i := 0; i < 5; i := i + 1) {
+    vector_sum := vector_sum + V[i];
+};
+Print(V);

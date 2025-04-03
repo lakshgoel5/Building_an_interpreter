@@ -1,1 +1,2 @@
-Syntax error at position 0: Unexpected ''
+Type error in assignment to Matrixi: Expected Matrixi(3,3), got Matrixf(3,3)
+Error: Type checking failed. Exiting...

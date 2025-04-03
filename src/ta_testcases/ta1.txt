@@ -1,0 +1,6 @@
+matrixf 2 2 a;matrixf 2 2 b;
+a := Input();
+b := Input();
+matrixf 2 2 add_matrix;
+add_matrix := a + b;
+Print(add_matrix);

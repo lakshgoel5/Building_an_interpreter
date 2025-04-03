@@ -1,0 +1,38 @@
+AST Produced:
+Line(
+  Line(
+    Line(
+      Line(
+        Line(
+          Line(
+            Matrixf(1,2,A),
+            Matrixf(2,3,B)
+          ),
+          Matrixf(1,3,multiply_matrices)
+        ),
+        Assign(
+          Variable(A),
+          Input
+        )
+      ),
+      Assign(
+        Variable(B),
+        Input
+      )
+    ),
+    Assign(
+      Variable(multiply_matrices),
+      Multiply(
+        Variable(A),
+        Variable(B)
+      )
+    )
+  ),
+  Print(
+    Variable(multiply_matrices)
+  )
+)
+
+
+Performing type checking...
+Type checking passed successfully!

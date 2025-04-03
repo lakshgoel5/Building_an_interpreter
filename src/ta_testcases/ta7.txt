@@ -1,0 +1,19 @@
+(*# Gaussian Elimination (Ax = b)
+import Matrix
+if Matrix.determinant(A) != 0:
+    A_inverse = Matrix.inverse(A)
+    x = Matrix.vector_multiply(A, b)
+else:
+    raise MatrixNotInvertible*)
+
+matrixf 2 2 A;
+matrixf 2 3 x;
+A := Input();
+if (det(A) != 0.) then {
+    matrixf 2 3 b;
+    b := Input();
+    matrixf 2 2 A_inverse := inv(A);
+    x := A*b;
+} else {
+    raise (MatrixNotInvertible);
+}

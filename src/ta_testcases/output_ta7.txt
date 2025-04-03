@@ -1,0 +1,50 @@
+AST Produced:
+Line(
+  Line(
+    Line(
+      Matrixf(2,2,A),
+      Matrixf(2,3,x)
+    ),
+    Assign(
+      Variable(A),
+      Input
+    )
+  ),
+  If(
+    NotEqual(
+      Determinant(
+        Variable(A)
+      ),
+      Const_Float(0.000000)
+    ),
+    Line(
+      Line(
+        Line(
+          Matrixf(2,3,b),
+          Assign(
+            Variable(b),
+            Input
+          )
+        ),
+        Assign(
+          Matrixf(2,2,A_inverse),
+          Inverse(
+            Variable(A)
+          )
+        )
+      ),
+      Assign(
+        Variable(x),
+        Multiply(
+          Variable(A),
+          Variable(b)
+        )
+      )
+    ),
+    Raise(MatrixNotInvertible)
+  )
+)
+
+
+Performing type checking...
+Type checking passed successfully!

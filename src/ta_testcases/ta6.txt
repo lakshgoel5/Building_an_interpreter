@@ -1,0 +1,11 @@
+(*# Matrix and Vector Product
+import Matrix
+multiply_vector_matrix = Matrix.vector_multiply(A, x)*)
+
+matrixf 1 2 A;
+int X;
+matrixf 1 2 multiply_vector_matrix;
+A := Input();
+X := Input();
+multiply_vector_matrix := A*X;
+Print(multiply_vector_matrix);

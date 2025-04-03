@@ -1,0 +1,9 @@
+float sum_of_squares:=0.;
+matrixf 4 5 A;
+for (int i := 0; i < row(A); i := i + 1) {
+    for (int j := 0; j < cols(A); j := j + 1) {
+        sum_of_squares := sum_of_squares + A[i, j] * A[i, j];
+    };
+};
+float magnitude_of_matrix := sqrt(sum_of_squares);
+Print(magnitude_of_matrix);

@@ -1,1 +1,3 @@
-Syntax error at position 0: Unexpected ''
+Type checking passed successfully!
+11
+Error: Division by zero in integer division

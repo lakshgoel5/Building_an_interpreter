@@ -1,0 +1,18 @@
+matrixi 4 4 m := 4,4[[20,2,3,4];[5,6,7,8];[9,10,11,12];[13,14,20,16]];
+Print(m);
+
+matrixi 4 4 n := transpose(m);
+Print(n);
+
+matrixi 3 4 m1 := 3,4[[1,2,3,4];[5,6,7,8];[9,10,11,12]];
+matrixi 4 3 n2:= transpose(m1);
+Print(n2);
+
+matrixi 3 3 minored:= minor(m, 3, 3);
+Print(minored);
+
+int determinant:= det(minored);
+Print(determinant);
+
+matrixi 3 3 inversed:= inv(minored);
+Print(inversed);

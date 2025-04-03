@@ -1,0 +1,5 @@
+matrixf 2 2 a;
+a := Input();
+float determinant_of_matrix ;
+determinant_of_matrix  := det(a);
+Print(determinant_of_matrix);

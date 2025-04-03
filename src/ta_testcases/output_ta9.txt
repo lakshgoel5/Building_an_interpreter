@@ -1,0 +1,55 @@
+AST Produced:
+Line(
+  Line(
+    Line(
+      Line(
+        Assign(
+          Vectori(3,vector_sum),
+          Const_Vector_int(3, [
+            Const_Int(0),
+            Const_Int(0),
+            Const_Int(0)
+          ])
+        ),
+        Matrixi(5,3,V)
+      ),
+      Assign(
+        Variable(V),
+        Input
+      )
+    ),
+    For(
+      Assign(
+        Int(i),
+        Const_Int(0)
+      ),
+      Less(
+        Variable(i),
+        Const_Int(5)
+      ),
+      Assign(
+        Variable(i),
+        Add(
+          Variable(i),
+          Const_Int(1)
+        )
+      ),
+      Assign(
+        Variable(vector_sum),
+        Add(
+          Variable(vector_sum),
+          AccessVector(V,
+            Variable(i)
+          )
+        )
+      )
+    )
+  ),
+  Print(
+    Variable(V)
+  )
+)
+
+
+Performing type checking...
+Type checking passed successfully!

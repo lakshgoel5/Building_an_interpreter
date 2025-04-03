@@ -38,6 +38,7 @@ let rec float_matrix_to_exp_matrix m =
   | [] -> []
   | row :: rest -> (float_list_to_exp_list row) :: (float_matrix_to_exp_matrix rest)
 
+
 let rec dot_product_int list1 list2 = 
   match list1, list2 with
   | [], [] -> 0
@@ -72,47 +73,68 @@ let magnitude v = length v;;
 let transpose m = 
   let cols = List.length (List.hd m) in
   let rec transpose_helper m acc =
-    if List.length acc = cols then acc
+    if List.length acc = cols then List.rev acc
     else
-      let new_row = List.map (fun row -> List.hd row) m in
-      let new_m = List.map (fun row -> List.tl row) m in
+      let new_row = List.map (fun row -> List.hd row) m in (*Pick all first elements of each row, and make a new list*)
+      let new_m = List.map (fun row -> List.tl row) m in (*Pick all elements of list except first one to create new matrix*)
       transpose_helper new_m (new_row :: acc)
   in
   transpose_helper m []
+
+let removing_element_from_row row j =
+  let rec remove_helper row acc i =
+    match row with
+    | [] -> List.rev acc
+    | x::rest -> if i = j then remove_helper rest acc (i + 1) (*skip this element*)
+    else remove_helper rest (x :: acc) (i + 1)
+  in
+  remove_helper row [] 0
 
 let minor m i j =
   let rec remove_row_and_col m i j acc row_num =
     match m with
     | [] -> List.rev acc
     | row::rest ->
-      if row_num = i then remove_row_and_col rest i j acc (row_num + 1)
+      if row_num = i then remove_row_and_col rest i j acc (row_num + 1) (*that row not added to new matrix*)
       else
-        let new_row = List.filteri (fun index _ -> index <> j) row in
+        let new_row = removing_element_from_row row j in
         remove_row_and_col rest i j (new_row :: acc) (row_num + 1)
   in
   remove_row_and_col m i j [] 0
 
 let rec determinant_int m =
-  let rec det m acc i j =
-    if List.length (List.hd m) = j then acc
-    else
-      let sign = if (i + j) mod 2 = 0 then 1 else -1 in
-      let minor_det = determinant_int (minor m i j) in
-      let new_acc = acc + sign * (List.nth (List.hd m) j) * minor_det in
-      det m new_acc i (j + 1)
-  in
-  det m 0 0 0
+  if List.length m = 1 then
+    List.hd (List.hd m)
+  else
+    let rec det m acc i j =
+      if List.length m = 0 then raise DimensionError
+      else if List.length (List.hd m) = j then acc
+      else
+        let sign = if (i + j) mod 2 = 0 then 1 else -1 in
+        let element = List.nth (List.hd m) j in
+        let minor_m = minor m i j in
+        let minor_det = determinant_int minor_m in
+        let new_acc = acc + sign * element * minor_det in
+        det m new_acc i (j + 1)
+    in
+    det m 0 0 0
 
 let rec determinant_float m =
-  let rec det m acc i j =
-    if List.length (List.hd m) = j then acc
-    else
-      let sign = if (i + j) mod 2 = 0 then 1.0 else -1.0 in
-      let minor_det = determinant_float (minor m i j) in
-      let new_acc = acc +. sign *. (List.nth (List.hd m) j) *. minor_det in
-      det m new_acc i (j + 1)
-  in
-  det m 0.0 0 0
+  if List.length m = 1 then
+    List.hd (List.hd m)
+  else
+    let rec det m acc i j =
+      if List.length m = 0 then raise DimensionError
+      else if List.length (List.hd m) = j then acc
+      else
+        let sign = if (i + j) mod 2 = 0 then 1. else -1. in
+        let element = List.nth (List.hd m) j in
+        let minor_m = minor m i j in
+        let minor_det = determinant_float minor_m in
+        let new_acc = acc +. sign *. element *. minor_det in
+        det m new_acc i (j + 1)
+    in
+    det m 0.0 0 0
 
 let list_of_cofactors m i =
   let rec row_cofactors m acci j = 

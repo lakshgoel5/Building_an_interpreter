@@ -1,0 +1,11 @@
+(*# Matrix Multiplication
+import Matrix
+multiply_matrices = Matrix.multiply(A, B)*)
+
+matrixf 1 2 A;
+matrixf 2 3 B;
+matrixf 1 3 multiply_matrices;
+A := Input();
+B := Input();
+multiply_matrices := A*B;
+Print(multiply_matrices);

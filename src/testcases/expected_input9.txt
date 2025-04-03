@@ -1,1 +1,2 @@
-Syntax error at position 0: Unexpected ''
+Type checking passed successfully!
+Error: Vector should not be NULL/zero

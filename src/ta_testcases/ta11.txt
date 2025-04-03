@@ -1,0 +1,36 @@
+float threshold := 1e-6;
+matrixf 3 3 A;
+A := Input();
+float norm_diff := 0.;
+
+for (int i := 0; i < row(A); i := i + 1) {
+    for (int j := 0; j < cols(A); j := j + 1) {
+        norm_diff := norm_diff + A[i, j] * A[i, j];
+    };
+};
+norm_diff := sqrt(norm_diff);
+
+
+while(norm_diff > threshold) {
+    A := A*A;
+    float mag_of_A := 0.;
+
+    for (int i := 0; i < row(A); i := i + 1) {
+        for (int j := 0; j < cols(A); j := j + 1) {
+            mag_of_A := mag_of_A + A[i, j] * A[i, j];
+        };
+    };
+    mag_of_A := sqrt(mag_of_A);
+
+    norm_diff := mag_of_A - threshold;
+};
+
+(*# Control Flow -
+# While Loop (magnitude function could be defined before this)
+import Matrix
+threshold = 1e-6
+norm_diff = Matrix.magnitude(A)
+while norm_diff > threshold:
+    A := Matrix.multiply(A, A)
+    norm_diff := Matrix.magnitude(A) - threshold*)
+

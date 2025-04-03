@@ -1,0 +1,28 @@
+AST Produced:
+Line(
+  Line(
+    Line(
+      Line(
+        Matrixf(2,2,a),
+        Assign(
+          Variable(a),
+          Input
+        )
+      ),
+      Matrixf(2,2,transpose_matrix)
+    ),
+    Assign(
+      Variable(transpose_matrix),
+      Transpose(
+        Variable(a)
+      )
+    )
+  ),
+  Print(
+    Variable(transpose_matrix)
+  )
+)
+
+
+Performing type checking...
+Type checking passed successfully!

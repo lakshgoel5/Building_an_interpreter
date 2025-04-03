@@ -1,0 +1,28 @@
+(*# Eigenvalues (2x2 Matrix - Solving Roots of Quadratic)
+import Matrix
+# Eigenvalues of 2x2 matrix [ [a, b], [c, d] ]
+trace = a + d
+determinant = Matrix.determinant(A)
+# Characteristic polynomial: λ^2 - trace * λ + determinant = 0
+# Solving quadratic equation using discriminant
+D = trace * trace - 4 * determinant
+if D >= 0:
+    eigenvalue1 = (trace + sqrt(D)) / 2
+    eigenvalue2 = (trace - sqrt(D)) / 2
+else:
+    raise ComplexEigenvaluesError*)
+
+matrixf 2 2 A;
+float trace;
+A := Input();
+trace := A[0, 0] + A[1, 1];
+float determinant := det(A);
+float D := trace * trace - 4 * determinant;
+float eigenvalue1;
+float eigenvalue2;
+if (D >= 0.) then {
+    eigenvalue1 := (trace + sqrt(D)) / 2;
+    eigenvalue2 := (trace - sqrt(D)) / 2;
+} else {
+    raise (ComplexEigenvaluesError);
+}

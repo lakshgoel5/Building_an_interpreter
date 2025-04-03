@@ -1,0 +1,28 @@
+AST Produced:
+Line(
+  Line(
+    Line(
+      Line(
+        Matrixf(2,2,a),
+        Assign(
+          Variable(a),
+          Input
+        )
+      ),
+      Float(determinant_of_matrix)
+    ),
+    Assign(
+      Variable(determinant_of_matrix),
+      Determinant(
+        Variable(a)
+      )
+    )
+  ),
+  Print(
+    Variable(determinant_of_matrix)
+  )
+)
+
+
+Performing type checking...
+Type checking passed successfully!

@@ -342,46 +342,46 @@ let rec eval_with_env env ast =
     let v1 = eval env e1 in
     let v2 = eval env e2 in
     (match (v1,v2) with
-    | (Const_Int i1, Const_Int i2) when i2 <> 0 -> (env, Const_Int (i1 / i2))
-    | (Const_Float f1, Const_Float f2) when f2 <> 0.0 -> (env, Const_Float (f1 /. f2))
+    | (Const_Int i1, Const_Int i2) -> if i2 <> 0 then (env, Const_Int (i1 / i2)) else raise (Failure "Division by zero in integer division")
+    | (Const_Float f1, Const_Float f2) -> if f2 <> 0.0 then (env, Const_Float (f1 /. f2)) else raise (Failure "Division by zero in float division")
     | (Const_Vector_int (d, s1), Const_Vector_int (d1, s2)) when d = d1 ->
       let res = List.map2 (fun x y -> match (x, y) with
-        | (Const_Int f1, Const_Int f2) when f2 <> 0 -> Const_Int (f1 / f2)
+        | (Const_Int f1, Const_Int f2) -> if f2 <> 0 then Const_Int (f1 / f2) else raise (Failure "Division by zero in vector int division")
         | _ -> raise (Failure "Invalid vector element")) s1 s2 in
       (env, Const_Vector_int (d, res))
     | (Const_Vector_float (d, s1), Const_Vector_float (d1, s2)) when d = d1 ->
       let res = List.map2 (fun x y -> match (x, y) with
-        | (Const_Float f1, Const_Float f2) when f2 <> 0.0 -> Const_Float (f1 /. f2)
+        | (Const_Float f1, Const_Float f2) -> if f2 <> 0.0 then Const_Float (f1 /. f2) else raise (Failure "Division by zero in vector float division")
         | _ -> raise (Failure "Invalid vector element")) s1 s2 in
       (env, Const_Vector_float (d, res))
     | (Const_Vector_int (d, s1), Const_Vector_float (d1, s2)) when d = d1 ->
       let res = List.map2 (fun x y -> match (x, y) with
-        | (Const_Int i1, Const_Float f2) when f2 <> 0.0 -> Const_Float ((float_of_int i1) /. f2)
+        | (Const_Int i1, Const_Float f2) ->  if f2 <> 0.0 then Const_Float ((float_of_int i1) /. f2) else raise (Failure "Division by zero in vector int to float division")
         | _ -> raise (Failure "Invalid vector element")) s1 s2 in
       (env, Const_Vector_float (d, res))
     | (Const_Vector_float (d, s1), Const_Vector_int (d1, s2)) when d = d1 ->
       let res = List.map2 (fun x y -> match (x, y) with
-        | (Const_Float f1, Const_Int i2) when i2 <> 0 -> Const_Float (f1 /. (float_of_int i2))
+        | (Const_Float f1, Const_Int i2)  -> if i2 <> 0 then Const_Float (f1 /. (float_of_int i2)) else raise (Failure "Division by zero in vector float to int division")
         | _ -> raise (Failure "Invalid vector element")) s1 s2 in
       (env, Const_Vector_float (d, res))
     | (Const_Matrix_int (r, c, m1), Const_Matrix_int (r1, c1, m2)) when r = r1 && c = c1 ->
       let res = List.map2 (fun row1 row2 -> List.map2 (fun x y -> match (x,y) with
-        | (Const_Int i1, Const_Int i2) when i2 <> 0 -> Const_Int (i1 / i2)
+        | (Const_Int i1, Const_Int i2) -> if i2 <> 0 then Const_Int (i1 / i2) else raise (Failure "Division by zero in matrix int division")
         | _ -> raise (Failure "Invalid matrix element")) row1 row2) m1 m2 in
       (env, Const_Matrix_int (r, c, res))
     | (Const_Matrix_float (r, c, m1), Const_Matrix_float (r1, c1, m2)) when r = r1 && c = c1 ->
       let res = List.map2 (fun row1 row2 -> List.map2 (fun x y -> match (x,y) with
-        | (Const_Float f1, Const_Float f2) when f2 <> 0.0 -> Const_Float (f1 /. f2)
+        | (Const_Float f1, Const_Float f2) -> if f2 <> 0.0 then Const_Float (f1 /. f2) else raise (Failure "Division by zero in matrix float division")
         | _ -> raise (Failure "Invalid matrix element")) row1 row2) m1 m2 in
       (env, Const_Matrix_float (r, c, res))
     | (Const_Matrix_int (r, c, m1), Const_Matrix_float (r1, c1, m2)) when r = r1 && c = c1 ->
       let res = List.map2 (fun row1 row2 -> List.map2 (fun x y -> match (x,y) with
-        | (Const_Int i1, Const_Float f2) when f2 <> 0.0 -> Const_Float ((float_of_int i1) /. f2)
+        | (Const_Int i1, Const_Float f2) -> if f2 <> 0.0 then Const_Float ((float_of_int i1) /. f2) else raise (Failure "Division by zero in matrix int to float division")
         | _ -> raise (Failure "Invalid matrix element")) row1 row2) m1 m2 in
       (env, Const_Matrix_float (r, c, res))
     | (Const_Matrix_float (r, c, m1), Const_Matrix_int (r1, c1, m2)) when r = r1 && c = c1 ->
       let res = List.map2 (fun row1 row2 -> List.map2 (fun x y -> match (x,y) with
-        | (Const_Float f1, Const_Int i2) when i2 <> 0 -> Const_Float (f1 /. (float_of_int i2))
+        | (Const_Float f1, Const_Int i2) ->if i2 <> 0 then Const_Float (f1 /. (float_of_int i2)) else raise (Failure "Division by zero in matrix float to int division")
         | _ -> raise (Failure "Invalid matrix element")) row1 row2) m1 m2 in
       (env, Const_Matrix_float (r, c, res))
     | _ -> raise (Failure "Type mismatch in division operation"))
@@ -475,7 +475,7 @@ let rec eval_with_env env ast =
 
   | Remainder (e1, e2) ->
     (match (eval env e1, eval env e2) with
-    | (Const_Int v1, Const_Int v2) -> (env, Const_Int (v1 mod v2))
+    | (Const_Int v1, Const_Int v2) -> if v2 <> 0 then (env, Const_Int (v1 mod v2)) else raise (Failure "Division by zero in finding remainder")
     | _ -> failwith "Type error: Expected integer expressions for remainder operation")
   
   | Conjunction (e1, e2) ->
@@ -593,7 +593,7 @@ let rec eval_with_env env ast =
   | CreateEmpty (d1, d2) -> (*Only support floats*)
     (match (d1, d2) with
     | (Const_Int i1, Const_Int i2) when i1 > 0 && i2 > 0 -> (env, Const_Matrix_float (i1, i2, List.init i1 (fun _ -> List.init i2 (fun _ -> Const_Float 0.0))))
-    | _ -> raise (Failure "CreateEmpty can be applied only on positive Ints"))
+    | _ -> raise (Failure "Dimensions can only be positive Ints"))
 
   | DotProd (e1, e2) ->
     let v1 = eval env e1 in
@@ -607,8 +607,8 @@ let rec eval_with_env env ast =
     let v1 = eval env e1 in
     let v2 = eval env e2 in
     (match (v1,v2) with
-    | (Const_Vector_int (d, s1), Const_Vector_int (d1, s2)) -> let res = Operations.angle (Operations.exp_list_to_float_list s1) (Operations.exp_list_to_float_list s2) in (env, Const_Float res)
-    | (Const_Vector_float (d, s1), Const_Vector_float (d1, s2)) -> let res = Operations.angle (Operations.exp_list_to_float_list s1) (Operations.exp_list_to_float_list s2) in (env, Const_Float res)
+    | (Const_Vector_int (d, s1), Const_Vector_int (d1, s2)) -> if Operations.length (Operations.exp_list_to_float_list s1) <> 0. && Operations.length (Operations.exp_list_to_float_list s2) <> 0.  then let res = Operations.angle (Operations.exp_list_to_float_list s1) (Operations.exp_list_to_float_list s2) in (env, Const_Float res) else raise (Failure "Vector should not be NULL/zero")
+    | (Const_Vector_float (d, s1), Const_Vector_float (d1, s2)) -> if Operations.length (Operations.exp_list_to_float_list s1) <> 0. && Operations.length (Operations.exp_list_to_float_list s2) <> 0.  then let res = Operations.angle (Operations.exp_list_to_float_list s1) (Operations.exp_list_to_float_list s2) in (env, Const_Float res) else raise (Failure "Vector should not be NULL/zero")
     | _ -> raise (Failure "Type mismatch in angle operation"))
 
   | Transpose e1 ->
@@ -628,8 +628,8 @@ let rec eval_with_env env ast =
   | Determinant e1 ->
     let v1 = eval env e1 in
     (match v1 with
-    | Const_Matrix_int (r, c, m) -> let res = Operations.determinant_int (exp_matrix_to_int_matrix m) in (env, Const_Int res)
-    | Const_Matrix_float (r, c, m) -> let res = Operations.determinant_float (exp_matrix_to_float_matrix m) in (env, Const_Float res)
+    | Const_Matrix_int (r, c, m) -> let res = Operations.determinant_int (Operations.exp_matrix_to_int_matrix m) in (env, Const_Int res)
+    | Const_Matrix_float (r, c, m) -> let res = Operations.determinant_float (Operations.exp_matrix_to_float_matrix m) in (env, Const_Float res)
     | _ -> raise (Failure "Determinant can be applied only on Matrices"))
 
   | Minor (e1, e2, e3) -> (*Matrix, index1, index2*)
@@ -637,15 +637,15 @@ let rec eval_with_env env ast =
     let v2 = eval env e2 in
     let v3 = eval env e3 in
     (match (v1,v2,v3) with
-    | (Const_Matrix_int (r, c, m), Const_Int i1, Const_Int i2) -> let res = (Operations.minor m i1 i2) in (env, Const_Matrix_int (r-1, c-1, res))
-    | (Const_Matrix_float (r, c, m), Const_Int i1, Const_Int i2) -> let res = (Operations.minor m i1 i2) in (env, Const_Matrix_float (r-1, c-1, res))
+    | (Const_Matrix_int (r, c, m), Const_Int i1, Const_Int i2) -> if (i1>=0 && i1<r) && (i2>=0 && i2<c) then let res = (Operations.minor m i1 i2) in (env, Const_Matrix_int (r-1, c-1, res)) else raise (Failure "Index out of bounds in Minor")
+    | (Const_Matrix_float (r, c, m), Const_Int i1, Const_Int i2) -> if (i1>=0 && i1<r) && (i2>=0 && i2<c) then let res = (Operations.minor m i1 i2) in (env, Const_Matrix_float (r-1, c-1, res)) else raise (Failure "Index out of bounds in Minor")
     | _ -> raise (Failure "Minor can be applied only on Matrices"))
 
   | Inverse e1 ->
     let v1 = eval env e1 in
     (match v1 with
-    | Const_Matrix_int (r, c, m) -> let res = Operations.float_matrix_to_exp_matrix (Operations.inverse (exp_matrix_to_float_matrix m)) in (env, Const_Matrix_float (r, c, res))
-    | Const_Matrix_float (r, c, m) -> let res = Operations.float_matrix_to_exp_matrix (Operations.inverse (exp_matrix_to_float_matrix m)) in (env, Const_Matrix_float (r, c, res))
+    | Const_Matrix_int (r, c, m) -> let res = Operations.float_matrix_to_exp_matrix (Operations.inverse (Operations.exp_matrix_to_float_matrix m)) in (env, Const_Matrix_float (r, c, res))
+    | Const_Matrix_float (r, c, m) -> let res = Operations.float_matrix_to_exp_matrix (Operations.inverse (Operations.exp_matrix_to_float_matrix m)) in (env, Const_Matrix_float (r, c, res))
     | _ -> raise (Failure "Inverse can be applied only on Matrices"))
 
   | Input ->
