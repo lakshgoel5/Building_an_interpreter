@@ -14,15 +14,20 @@ else:
 
 matrixf 2 2 A;
 float trace;
-A := Input();
+A := Input(ta8in.txt);
 trace := A[0, 0] + A[1, 1];
+Print(trace);
 float determinant := det(A);
-float D := trace * trace - 4 * determinant;
+Print(determinant);
+float D := (trace * trace) - (4.0 * determinant);
+Print(D);
 float eigenvalue1;
 float eigenvalue2;
 if (D >= 0.) then {
-    eigenvalue1 := (trace + sqrt(D)) / 2;
-    eigenvalue2 := (trace - sqrt(D)) / 2;
+    eigenvalue1 := (trace + sqrt(D)) / 2.;
+    eigenvalue2 := (trace - sqrt(D)) / 2.;
+    Print(eigenvalue1);
+    Print(eigenvalue2);
 } else {
     raise (ComplexEigenvaluesError);
 }

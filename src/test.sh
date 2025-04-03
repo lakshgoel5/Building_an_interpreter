@@ -25,8 +25,8 @@ for i in {1..10}; do
 done
 
 # Process each input file from 1 to 10
-for i in {1..10}; do
-    INPUT_FILE="ta_testcases/input$i.txt"
+for i in {1..11}; do
+    INPUT_FILE="ta_testcases/ta$i.txt"
     OUTPUT_FILE="ta_testcases/output_ta$i.txt"
     
     echo "Processing $INPUT_FILE -> $OUTPUT_FILE"

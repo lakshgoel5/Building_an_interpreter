@@ -1,5 +1,5 @@
 matrixf 2 2 a;
-a := Input();
+a := Input(ta2in.txt);
 matrixf 2 2 transpose_matrix;
 transpose_matrix := transpose(a);
 Print(transpose_matrix);

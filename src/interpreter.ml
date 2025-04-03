@@ -143,6 +143,72 @@ let rec eval_with_env env ast =
         (new_env, v2)
       | _ -> raise (Failure "Type mismatch: variable type does not match"))
 
+
+  | Assign (AccessMatrix(name,e1,e2), e3) ->
+    let v1 = eval env e1 in
+    let v2 = eval env e2 in
+    let v3 = eval env e3 in
+    let matrix = (match Environment.lookup env name with
+    | Some (VMatrixi (r, c, m)) -> Const_Matrix_int (r, c, List.map (List.map (fun i -> Const_Int i)) m)
+    | Some (VMatrixf (r, c, m)) -> Const_Matrix_float (r, c, List.map (List.map (fun f -> Const_Float f)) m)
+    | None -> raise (Failure ("Variable not found: " ^ name))
+    | _ -> raise (Failure "Type mismatch: expected matrix")) in
+    (
+      match (v1, v2, v3, matrix) with
+      | (Const_Int i1, Const_Int i2, Const_Int valuei, Const_Matrix_int(r,c,l)) -> if i1 >= 0 && i1 < r && i2 >= 0 && i2 < c then
+        let updated_matrix = Operations.update_matrix matrix i1 i2 (Const_Int valuei) in
+        let env_put_matrix = Operations.update_for_env updated_matrix in
+        let new_env = Environment.extend env name env_put_matrix in
+        (new_env, v3)
+      else raise (Failure "Out of bound access in matrixi")
+      | (Const_Int i1, Const_Int i2, Const_Float valuef, Const_Matrix_float(r,c,l)) -> if i1 >= 0 && i1 < r && i2 >= 0 && i2 < c then
+        let updated_matrix = Operations.update_matrix matrix i1 i2 (Const_Float valuef) in
+        let env_put_matrix = Operations.update_for_env updated_matrix in
+        let new_env = Environment.extend env name env_put_matrix in
+        (new_env, v3)
+      else raise (Failure "Out of bound access in matrixf")
+      | (_, _, Const_Int valuei, Const_Matrix_int(r,c,l)) -> raise (Failure "Access elements must be int")
+      | (_, _, Const_Float valuei, Const_Matrix_float(r,c,l)) -> raise (Failure "Access elements must be int")
+      | (_,_,_,Const_Matrix_int(r,c,l)) -> raise (Failure "Invalid Assignment type, expected int")
+      | (_,_,_,Const_Matrix_float(r,c,l)) -> raise (Failure "Invalid Assignment type, expected float")
+      | (_,_,_,_) -> raise (Failure "Invalid matrix assignment")
+    )
+
+  | Assign (AccessVector(name, e), e1) ->
+    let v = eval env e in
+    let v1 = eval env e1 in
+    let vector = (match Environment.lookup env name with
+    | Some (VVectori (d, vec)) -> Const_Vector_int (d, List.map (fun i -> Const_Int i) vec)
+    | Some (VVectorf (d, vec)) -> Const_Vector_float (d, List.map (fun f -> Const_Float f) vec)
+    | None -> raise (Failure ("Variable not found: " ^ name))
+    | _ -> raise (Failure "Type mismatch: expected vector")) in
+    (
+      match (v, v1, vector) with
+      | (Const_Int idx, Const_Int valuei, Const_Vector_int(d, l)) -> 
+          if idx >= 0 && idx < d then
+            let updated_vector = Operations.update_vector vector idx (Const_Int valuei) in
+            let env_put_vector = Operations.update_for_env updated_vector in
+            let new_env = Environment.extend env name env_put_vector in
+            (new_env, v1)
+          else raise (Failure "Out of bound access in vectori")
+      | (Const_Int idx, Const_Float valuef, Const_Vector_float(d, l)) -> 
+          if idx >= 0 && idx < d then
+            let updated_vector = Operations.update_vector vector idx (Const_Float valuef) in
+            let env_put_vector = Operations.update_for_env updated_vector in
+            let new_env = Environment.extend env name env_put_vector in
+            (new_env, v1)
+          else raise (Failure "Out of bound access in vectorf")
+      | (_, Const_Int valuei, Const_Vector_int(d, l)) -> 
+          raise (Failure "Access index must be int")
+      | (_, Const_Float valuef, Const_Vector_float(d, l)) -> 
+          raise (Failure "Access index must be int")
+      | (_, Const_Int _, Const_Vector_float(d, l)) -> 
+          raise (Failure "Invalid Assignment type, expected float")
+      | (_, Const_Float _, Const_Vector_int(d, l)) -> 
+          raise (Failure "Invalid Assignment type, expected int")
+      | (_, _, _) -> 
+          raise (Failure "Invalid vector assignment")
+    )
   | Assign (_, _) -> raise (Failure "Invalid Assignment")
   
   | Print(e) ->
@@ -278,64 +344,138 @@ let rec eval_with_env env ast =
         | _ -> raise (Failure "Invalid matrix element")) row1 row2) m1 m2 in
       (env, Const_Matrix_float (r, c, res))
     | _ -> raise (Failure "Type mismatch in subtraction operation"))
-  | Multiply(e1, e2) -> (*Matrix Scaler Mult not included*)
+  | Multiply(e1, e2) ->
     let v1 = eval env e1 in
     let v2 = eval env e2 in
     (match (v1,v2) with
-    | (Const_Int i1, Const_Int i2) -> (env, Const_Int (i1 * i2))
-    | (Const_Float f1, Const_Float f2) -> (env, Const_Float (f1 *. f2))
-    | (Const_Vector_int (d, s1), Const_Vector_int (d1, s2)) when d = d1 ->
-      let res = List.map2 (fun x y -> match (x, y) with
-        | (Const_Int f1, Const_Int f2) -> Const_Int (f1 * f2)
-        | _ -> raise (Failure "Invalid vector element")) s1 s2 in
-      (env, Const_Vector_int (d, res))
-    | (Const_Vector_float (d, s1), Const_Vector_float (d1, s2)) when d = d1 ->
-      let res = List.map2 (fun x y -> match (x, y) with
-        | (Const_Float f1, Const_Float f2) -> Const_Float (f1 *. f2)
-        | _ -> raise (Failure "Invalid vector element")) s1 s2 in
-      (env, Const_Vector_float (d, res))
-    | (Const_Vector_int (d, s1), Const_Vector_float (d1, s2)) when d = d1 ->
-      let res = List.map2 (fun x y -> match (x, y) with
-        | (Const_Int i1, Const_Float f2) -> Const_Float ((float_of_int i1) *. f2)
-        | _ -> raise (Failure "Invalid vector element")) s1 s2 in
-      (env, Const_Vector_float (d, res))
-    | (Const_Vector_float (d, s1), Const_Vector_int (d1, s2)) when d = d1 ->
-      let res = List.map2 (fun x y -> match (x, y) with
-        | (Const_Float f1, Const_Int i2) -> Const_Float (f1 *. (float_of_int i2))
-        | _ -> raise (Failure "Invalid vector element")) s1 s2 in
-      (env, Const_Vector_float (d, res))
-    | (Const_Matrix_int (r, c, m1), Const_Matrix_int (r1, c1, m2)) when r = r1 && c = c1 ->
-      let res = List.map2 (fun row1 row2 -> List.map2 (fun x y -> match (x,y) with
-        | (Const_Int i1, Const_Int i2) -> Const_Int (i1 * i2)
-        | _ -> raise (Failure "Invalid matrix element")) row1 row2) m1 m2 in
-      (env, Const_Matrix_int (r, c, res))
-    | (Const_Matrix_float (r, c, m1), Const_Matrix_float (r1, c1, m2)) when r = r1 && c = c1 ->
-      let res = List.map2 (fun row1 row2 -> List.map2 (fun x y -> match (x,y) with
-        | (Const_Float f1, Const_Float f2) -> Const_Float (f1 *. f2)
-        | _ -> raise (Failure "Invalid matrix element")) row1 row2) m1 m2 in
-      (env, Const_Matrix_float (r, c, res))
-    | (Const_Matrix_int (r, c, m1), Const_Matrix_float (r1, c1, m2)) when r = r1 && c = c1 ->
-      let res = List.map2 (fun row1 row2 -> List.map2 (fun x y -> match (x,y) with
-        | (Const_Int i1, Const_Float f2) -> Const_Float ((float_of_int i1) *. f2)
-        | _ -> raise (Failure "Invalid matrix element")) row1 row2) m1 m2 in
-      (env, Const_Matrix_float (r, c, res))
-    | (Const_Matrix_float (r, c, m1), Const_Matrix_int (r1, c1, m2)) when r = r1 && c = c1 ->
-      let res = List.map2 (fun row1 row2 -> List.map2 (fun x y -> match (x,y) with
-        | (Const_Float f1, Const_Int i2) -> Const_Float (f1 *. (float_of_int i2))
-        | _ -> raise (Failure "Invalid matrix element")) row1 row2) m1 m2 in
-      (env, Const_Matrix_float (r, c, res))
+    | (Const_Int i1, Const_Int i2) -> 
+        (env, Const_Int (i1 * i2))
+    | (Const_Float f1, Const_Float f2) -> 
+        (env, Const_Float (f1 *. f2))
+    | (Const_Vector_int (d, s1), Const_Vector_int (d1, s2)) ->
+        if d = d1 then
+          let res = List.map2 (fun x y -> match (x, y) with
+            | (Const_Int f1, Const_Int f2) -> Const_Int (f1 * f2)
+            | _ -> raise (Failure "Invalid vector element")) s1 s2 in
+          (env, Const_Vector_int (d, res))
+        else 
+          raise (Failure "Vector dimensions must match for element-wise multiplication")
+    | (Const_Vector_float (d, s1), Const_Vector_float (d1, s2)) ->
+        if d = d1 then
+          let res = List.map2 (fun x y -> match (x, y) with
+            | (Const_Float f1, Const_Float f2) -> Const_Float (f1 *. f2)
+            | _ -> raise (Failure "Invalid vector element")) s1 s2 in
+          (env, Const_Vector_float (d, res))
+        else 
+          raise (Failure "Vector dimensions must match for element-wise multiplication")
+    | (Const_Vector_int (d, s1), Const_Vector_float (d1, s2)) ->
+        if d = d1 then
+          let res = List.map2 (fun x y -> match (x, y) with
+            | (Const_Int i1, Const_Float f2) -> Const_Float ((float_of_int i1) *. f2)
+            | _ -> raise (Failure "Invalid vector element")) s1 s2 in
+          (env, Const_Vector_float (d, res))
+        else 
+          raise (Failure "Vector dimensions must match for element-wise multiplication")
+    | (Const_Vector_float (d, s1), Const_Vector_int (d1, s2)) ->
+        if d = d1 then
+          let res = List.map2 (fun x y -> match (x, y) with
+            | (Const_Float f1, Const_Int i2) -> Const_Float (f1 *. (float_of_int i2))
+            | _ -> raise (Failure "Invalid vector element")) s1 s2 in
+          (env, Const_Vector_float (d, res))
+        else 
+          raise (Failure "Vector dimensions must match for element-wise multiplication")
+    | (Const_Matrix_int (r, c, m1), Const_Matrix_int (r1, c1, m2)) ->
+        if c = r1 then
+          let res = Operations.int_matrix_to_exp_matrix (Operations.matrix_multiply_int (Operations.exp_matrix_to_int_matrix m1) (Operations.exp_matrix_to_int_matrix m2)) in
+          (env, Const_Matrix_int (r, c1, res))
+        else
+          raise (Failure "Matrix dimensions incompatible for multiplication")
+    | (Const_Matrix_float (r, c, m1), Const_Matrix_float (r1, c1, m2)) ->
+        if c = r1 then
+          let res = Operations.float_matrix_to_exp_matrix (Operations.matrix_multiply_float (Operations.exp_matrix_to_float_matrix m1) (Operations.exp_matrix_to_float_matrix m2)) in
+          (env, Const_Matrix_float (r, c1, res))
+        else
+          raise (Failure "Matrix dimensions incompatible for multiplication")
+    | (Const_Matrix_int (r, c, m1), Const_Matrix_float (r1, c1, m2)) ->
+        if c = r1 then
+          let res = Operations.float_matrix_to_exp_matrix (Operations.matrix_multiply_float (Operations.exp_matrix_to_float_matrix m1) (Operations.exp_matrix_to_float_matrix m2)) in
+          (env, Const_Matrix_float (r, c1, res))
+        else
+          raise (Failure "Matrix dimensions incompatible for multiplication")
+    | (Const_Matrix_float (r, c, m1), Const_Matrix_int (r1, c1, m2)) ->
+        if c = r1 then
+          let res = Operations.float_matrix_to_exp_matrix (Operations.matrix_multiply_float (Operations.exp_matrix_to_float_matrix m1) (Operations.exp_matrix_to_float_matrix m2)) in
+          (env, Const_Matrix_float (r, c1, res))
+        else
+          raise (Failure "Matrix dimensions incompatible for multiplication")
     | (Const_Vector_int (d, s1), Const_Int i2) ->
-      let res = List.map (fun x -> match x with Const_Int f1 -> Const_Int (f1 * i2) | _ -> raise (Failure "Invalid vector element")) s1 in
-      (env, Const_Vector_int (d, res))
+        let res = List.map (fun x -> match x with 
+          | Const_Int f1 -> Const_Int (f1 * i2) 
+          | _ -> raise (Failure "Invalid vector element")) s1 in
+        (env, Const_Vector_int (d, res))
     | (Const_Vector_float (d, s1), Const_Float f2) ->
-      let res = List.map (fun x -> match x with Const_Float f1 -> Const_Float (f1 *. f2) | _ -> raise (Failure "Invalid vector element")) s1 in
-      (env, Const_Vector_float (d, res))
+        let res = List.map (fun x -> match x with 
+          | Const_Float f1 -> Const_Float (f1 *. f2) 
+          | _ -> raise (Failure "Invalid vector element")) s1 in
+        (env, Const_Vector_float (d, res))
     | (Const_Int i1, Const_Vector_int (d, s2)) ->
-      let res = List.map (fun x -> match x with Const_Int f2 -> Const_Int (i1 * f2) | _ -> raise (Failure "Invalid vector element")) s2 in
-      (env, Const_Vector_int (d, res))
+        let res = List.map (fun x -> match x with 
+          | Const_Int f2 -> Const_Int (i1 * f2) 
+          | _ -> raise (Failure "Invalid vector element")) s2 in
+        (env, Const_Vector_int (d, res))
     | (Const_Float f1, Const_Vector_float (d, s2)) ->
-      let res = List.map (fun x -> match x with Const_Float f2 -> Const_Float (f1 *. f2) | _ -> raise (Failure "Invalid vector element")) s2 in
-      (env, Const_Vector_float (d, res))
+        let res = List.map (fun x -> match x with 
+          | Const_Float f2 -> Const_Float (f1 *. f2) 
+          | _ -> raise (Failure "Invalid vector element")) s2 in
+        (env, Const_Vector_float (d, res))
+    | (Const_Int i1, Const_Matrix_int (r, c, m2)) ->
+        let res = List.map (fun row -> 
+          List.map (fun x -> match x with 
+            | Const_Int i2 -> Const_Int (i1 * i2) 
+            | _ -> raise (Failure "Invalid matrix element")) row) m2 in
+        (env, Const_Matrix_int (r, c, res))
+    | (Const_Float f1, Const_Matrix_int (r, c, m2)) ->
+        let res = List.map (fun row -> 
+          List.map (fun x -> match x with 
+            | Const_Int i2 -> Const_Float (f1 *. (float_of_int i2)) 
+            | _ -> raise (Failure "Invalid matrix element")) row) m2 in
+        (env, Const_Matrix_float (r, c, res))
+    | (Const_Int i1, Const_Matrix_float (r, c, m2)) ->
+        let res = List.map (fun row -> 
+          List.map (fun x -> match x with 
+            | Const_Float f2 -> Const_Float ((float_of_int i1) *. f2) 
+            | _ -> raise (Failure "Invalid matrix element")) row) m2 in
+        (env, Const_Matrix_float (r, c, res))
+    | (Const_Float f1, Const_Matrix_float (r, c, m2)) ->
+        let res = List.map (fun row -> 
+          List.map (fun x -> match x with 
+            | Const_Float f2 -> Const_Float (f1 *. f2) 
+            | _ -> raise (Failure "Invalid matrix element")) row) m2 in
+        (env, Const_Matrix_float (r, c, res))
+    | (Const_Matrix_int (r, c, m1), Const_Int i2) ->
+        let res = List.map (fun row -> 
+          List.map (fun x -> match x with 
+            | Const_Int i1 -> Const_Int (i1 * i2) 
+            | _ -> raise (Failure "Invalid matrix element")) row) m1 in
+        (env, Const_Matrix_int (r, c, res))
+    | (Const_Matrix_float (r, c, m1), Const_Int i2) ->
+        let res = List.map (fun row -> 
+          List.map (fun x -> match x with 
+            | Const_Float f1 -> Const_Float (f1 *. (float_of_int i2)) 
+            | _ -> raise (Failure "Invalid matrix element")) row) m1 in
+        (env, Const_Matrix_float (r, c, res))
+    | (Const_Matrix_int (r, c, m1), Const_Float f2) ->
+        let res = List.map (fun row -> 
+          List.map (fun x -> match x with 
+            | Const_Int i1 -> Const_Float ((float_of_int i1) *. f2) 
+            | _ -> raise (Failure "Invalid matrix element")) row) m1 in
+        (env, Const_Matrix_float (r, c, res))
+    | (Const_Matrix_float (r, c, m1), Const_Float f2) ->
+        let res = List.map (fun row -> 
+          List.map (fun x -> match x with 
+            | Const_Float f1 -> Const_Float (f1 *. f2) 
+            | _ -> raise (Failure "Invalid matrix element")) row) m1 in
+        (env, Const_Matrix_float (r, c, res))
     | _ -> raise (Failure "Type mismatch in multiplication operation"))
 
   | Divide (e1, e2) ->
@@ -656,11 +796,23 @@ let rec eval_with_env env ast =
     (env, result)
 
   | Inputf(Filename (s)) -> (*s is a string*)
-    let chan = open_in s in
-    let lexbuf = Lexing.from_channel chan in
-    let ast = Parser.top Calc.tokenize lexbuf in
-    let result = eval env ast in
-    (env, result)
+    (try
+      let chan = open_in s in
+      try
+        let lexbuf = Lexing.from_channel chan in
+        let ast = Parser.top Calc.tokenize lexbuf in
+        let result = eval env ast in
+        close_in chan;  (* Ensure the file is closed after reading *)
+        (env, result)
+      with
+      | Parsing.Parse_error -> 
+          close_in_noerr chan; (* Close file safely even on error *)
+          failwith ("Parsing error in file: " ^ s)
+      | e ->
+          close_in_noerr chan;
+          raise e
+    with
+    | Sys_error msg -> failwith ("File error: " ^ msg))
   
   | Inputf (_) -> raise (Failure "Not a valid input format")
   | Filename (_) -> (env, Const_Bool true)
@@ -670,11 +822,13 @@ let rec eval_with_env env ast =
     (match (v1,v2) with
     | Const_Int r, Const_Int c ->
       (match Environment.lookup env s with
-      | Some (VMatrixi (rows, cols, m)) when r >= 0 && r < rows && c >= 0 && c < cols ->
+      | Some (VMatrixi (rows, cols, m)) -> if r >= 0 && r < rows && c >= 0 && c < cols then
         (env, Const_Int (List.nth (List.nth m r) c))
-      | Some (VMatrixf (rows, cols, m)) when r >= 0 && r < rows && c >= 0 && c < cols ->
+      else raise (Failure "Out of bound access in matrixi")
+      | Some (VMatrixf (rows, cols, m)) -> if r >= 0 && r < rows && c >= 0 && c < cols then
         (env, Const_Float (List.nth (List.nth m r) c))
-      | _ -> raise (Failure "Invalid access or out of bounds"))
+      else raise (Failure "Out of bound access in matrixf")
+      | _ -> raise (Failure "Invalid access. Only matrices can be accessed."))
     | _, _ -> raise (Failure "Only Intigers allowed in access"))
 
   | AccessVector(s, e) -> 
@@ -682,11 +836,15 @@ let rec eval_with_env env ast =
     (match v with
     | Const_Int i ->
       (match Environment.lookup env s with
-      | Some (VVectori (dim, vec)) when i >= 0 && i < dim ->
-        (env, Const_Int (List.nth vec i))
-      | Some (VVectorf (dim, vec)) when i >= 0 && i < dim ->
-        (env, Const_Float (List.nth vec i))
-      | _ -> raise (Failure "Invalid access or out of bounds"))
+      | Some (VVectori (dim, vec)) -> if i >= 0 && i < dim then (env, Const_Int (List.nth vec i))
+    else raise (Failure "Out of bound access in vectori")
+      | Some (VVectorf (dim, vec)) -> if i >= 0 && i < dim then (env, Const_Float (List.nth vec i))
+    else raise (Failure "Out of bound access in vectorf")
+      | Some (VMatrixi (r,c,m)) -> if i >= 0 && i < r then (env, Const_Vector_int (c, Operations.int_list_to_exp_list (List.nth m i)))
+    else raise (Failure "Out of bound access in matrixi")
+      | Some (VMatrixf (r,c,m)) -> if i >= 0 && i < r then (env, Const_Vector_float (c, Operations.float_list_to_exp_list (List.nth m i)))
+    else raise (Failure "Out of bound access in matrixf")
+      | _ -> raise (Failure "Invalid access. Only vectors can be accessed."))
     | _ -> raise (Failure "Only integers allowed in access"))
   
 and eval env ast =

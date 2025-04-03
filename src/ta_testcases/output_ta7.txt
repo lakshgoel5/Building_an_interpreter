@@ -1,50 +1,8 @@
-AST Produced:
-Line(
-  Line(
-    Line(
-      Matrixf(2,2,A),
-      Matrixf(2,3,x)
-    ),
-    Assign(
-      Variable(A),
-      Input
-    )
-  ),
-  If(
-    NotEqual(
-      Determinant(
-        Variable(A)
-      ),
-      Const_Float(0.000000)
-    ),
-    Line(
-      Line(
-        Line(
-          Matrixf(2,3,b),
-          Assign(
-            Variable(b),
-            Input
-          )
-        ),
-        Assign(
-          Matrixf(2,2,A_inverse),
-          Inverse(
-            Variable(A)
-          )
-        )
-      ),
-      Assign(
-        Variable(x),
-        Multiply(
-          Variable(A),
-          Variable(b)
-        )
-      )
-    ),
-    Raise(MatrixNotInvertible)
-  )
-)
-
-
-Performing type checking...
-Type checking passed successfully!
+Matrix of dimension 2 2:[
+[-2., 1.5]
+[1., -0.5]
+]
+Matrix of dimension 2 3:[
+[2.5, 2., 1.5]
+[0.5, 1., 1.5]
+]

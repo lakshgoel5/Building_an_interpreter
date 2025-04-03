@@ -1,4 +1,5 @@
 open Ast
+open Environment
 
 exception DimensionError;;
 exception DivisionBy0;;
@@ -23,6 +24,11 @@ let rec float_list_to_exp_list l =
   | [] -> []
   | f :: rest -> Const_Float f :: (float_list_to_exp_list rest)
 
+let rec int_list_to_exp_list l =
+  match l with
+  | [] -> []
+  | i :: rest -> Const_Int i :: (int_list_to_exp_list rest)
+
 let rec exp_matrix_to_int_matrix exps =
   match exps with
   | [] -> []
@@ -37,6 +43,11 @@ let rec float_matrix_to_exp_matrix m =
   match m with
   | [] -> []
   | row :: rest -> (float_list_to_exp_list row) :: (float_matrix_to_exp_matrix rest)
+
+let rec int_matrix_to_exp_matrix m =
+  match m with
+  | [] -> []
+  | row :: rest -> (List.map (fun x -> Const_Int x) row) :: (int_matrix_to_exp_matrix rest)
 
 
 let rec dot_product_int list1 list2 = 
@@ -80,6 +91,33 @@ let transpose m =
       transpose_helper new_m (new_row :: acc)
   in
   transpose_helper m []
+
+let matrix_multiply_int m1 m2 =
+  if m1 = [] || m2 = [] then raise DimensionError
+  else
+    let m2_t = transpose m2 in
+    let rec multiply_helper m1 acc =
+      match m1 with
+      | [] -> List.rev acc
+      | row1 :: rest1 ->
+        let new_row = List.map (fun col -> dot_product_int row1 col) m2_t in
+        multiply_helper rest1 (new_row :: acc)
+    in
+    multiply_helper m1 []
+
+let matrix_multiply_float m1 m2 =
+  if m1 = [] || m2 = [] then raise DimensionError
+  else
+    let m2_t = transpose m2 in
+    let rec multiply_helper m1 acc =
+      match m1 with
+      | [] -> List.rev acc
+      | row1 :: rest1 ->
+        let new_row = List.map (fun col -> dot_product_float row1 col) m2_t in
+        multiply_helper rest1 (new_row :: acc)
+    in
+    multiply_helper m1 []
+  
 
 let removing_element_from_row row j =
   let rec remove_helper row acc i =
@@ -165,3 +203,79 @@ let inverse m =
       let scale = 1.0 /. det in 
       List.map (fun row -> List.map (fun x -> scale *. x) row ) adj
 
+
+let update_matrix matrix i j value =
+  match matrix with
+  | Const_Matrix_int (r, c, rows) ->
+      let updated_rows = 
+        List.mapi (fun row_idx row ->
+          if row_idx = i then
+            List.mapi (fun col_idx elem ->
+              if col_idx = j then value else elem
+            ) row
+          else row
+        ) rows
+      in
+      Const_Matrix_int (r, c, updated_rows)
+  | Const_Matrix_float (r, c, rows) ->
+      let updated_rows = 
+        List.mapi (fun row_idx row ->
+          if row_idx = i then
+            List.mapi (fun col_idx elem ->
+              if col_idx = j then value else elem
+            ) row
+          else row
+        ) rows
+      in
+      Const_Matrix_float (r, c, updated_rows)
+  | _ -> raise (Failure "Invalid matrix type in update_matrix")
+
+let update_vector vector i value =
+  match vector with
+  | Const_Vector_int (r, v) ->
+      let updated_vector = 
+        List.mapi (fun idx elem ->
+          if idx = i then value else elem
+        ) v
+      in
+      Const_Vector_int (r, updated_vector)
+  | Const_Vector_float (r, v) ->
+      let updated_vector = 
+        List.mapi (fun idx elem ->
+          if idx = i then value else elem
+        ) v
+      in
+      Const_Vector_float (r, updated_vector)
+  | _ -> raise (Failure "Invalid vector type in update_vector")
+
+let update_for_env m =
+  match m with
+  | Const_Matrix_int (r, c, m) ->
+      let matrix_values = List.map (fun row -> 
+        List.map (fun x -> match x with
+          | Const_Int i -> i
+          | _ -> failwith "Type error: Expected only int values in matrix"
+        ) row
+      ) m in
+    VMatrixi (r, c, matrix_values)
+  | Const_Matrix_float (r, c, m) ->
+      let matrix_values = List.map (fun row -> 
+        List.map (fun x -> match x with
+          | Const_Float f -> f
+          | _ -> failwith "Type error: Expected only float values in matrix"
+        ) row
+      ) m in
+    VMatrixf (r, c, matrix_values)
+  | Const_Vector_int (r, v) ->
+      let vector_values = List.map (fun x -> match x with
+        | Const_Int i -> i
+        | _ -> failwith "Type error: Expected only int values in vector"
+      ) v in
+    VVectori (r, vector_values)
+  | Const_Vector_float (r, v) ->
+      let vector_values = List.map (fun x -> match x with
+        | Const_Float f -> f
+        | _ -> failwith "Type error: Expected only float values in vector"
+      ) v in
+    VVectorf (r, vector_values)
+  | _ -> raise (Failure "Invalid matrix/vector type in update_for_env")

@@ -1,38 +1,4 @@
-AST Produced:
-Line(
-  Line(
-    Line(
-      Line(
-        Line(
-          Line(
-            Matrixf(2,2,a),
-            Matrixf(2,2,b)
-          ),
-          Assign(
-            Variable(a),
-            Input
-          )
-        ),
-        Assign(
-          Variable(b),
-          Input
-        )
-      ),
-      Matrixf(2,2,add_matrix)
-    ),
-    Assign(
-      Variable(add_matrix),
-      Add(
-        Variable(a),
-        Variable(b)
-      )
-    )
-  ),
-  Print(
-    Variable(add_matrix)
-  )
-)
-
-
-Performing type checking...
-Type checking passed successfully!
+Matrix of dimension 2 2:[
+[1.23, 2.12]
+[3.89, 4.34]
+]

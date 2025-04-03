@@ -1,4 +1,3 @@
-Type checking passed successfully!
 78
 0.142929
 6.708204

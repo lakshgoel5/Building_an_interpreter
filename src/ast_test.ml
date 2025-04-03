@@ -294,7 +294,7 @@ let filename =
   if Array.length Sys.argv > 1 then
     Sys.argv.(1)  (* Use the first command-line argument *)
   else
-    "testcases/input10.txt"  (* Default if no argument provided *)
+    "ta_testcases/ta11.txt"  (* Default if no argument provided *)
   in
   let chan = open_in filename in
   let lexbuf = Lexing.from_channel chan in

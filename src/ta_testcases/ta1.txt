@@ -1,6 +1,6 @@
 matrixf 2 2 a;matrixf 2 2 b;
-a := Input();
-b := Input();
+a := Input(ta1_1.txt);
+b := Input(ta1_2.txt);
 matrixf 2 2 add_matrix;
 add_matrix := a + b;
 Print(add_matrix);

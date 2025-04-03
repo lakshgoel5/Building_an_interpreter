@@ -5,7 +5,7 @@ multiply_vector_matrix = Matrix.vector_multiply(A, x)*)
 matrixf 1 2 A;
 int X;
 matrixf 1 2 multiply_vector_matrix;
-A := Input();
-X := Input();
+A := Input(ta6_1.txt);
+X := Input(ta6_2.txt);
 multiply_vector_matrix := A*X;
 Print(multiply_vector_matrix);

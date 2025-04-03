@@ -8,12 +8,14 @@ else:
 
 matrixf 2 2 A;
 matrixf 2 3 x;
-A := Input();
+A := Input(ta71.txt);
 if (det(A) != 0.) then {
     matrixf 2 3 b;
-    b := Input();
+    b := Input(ta72.txt);
     matrixf 2 2 A_inverse := inv(A);
-    x := A*b;
+    Print(A_inverse);
+    x := A_inverse*b;
+    Print(x);
 } else {
     raise (MatrixNotInvertible);
 }

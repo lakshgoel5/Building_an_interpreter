@@ -1,5 +1,5 @@
 matrixf 2 2 a;
-a := Input();
+a := Input(ta3in.txt);
 float determinant_of_matrix ;
 determinant_of_matrix  := det(a);
 Print(determinant_of_matrix);

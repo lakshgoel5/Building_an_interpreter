@@ -13,7 +13,6 @@ let run_typechecker (ast : Ast.exp) =
     let _ = Typechecker.type_check ast !symbol_table in
     
     (* Step 2: If we get here, type checking passed *)
-    Printf.printf "Type checking passed successfully!\n";
     true
   
   with
@@ -46,7 +45,7 @@ let filename =
   if Array.length Sys.argv > 1 then
     Sys.argv.(1)  (* Use the first command-line argument *)
   else
-    "testcases/input1.txt"  (* Default if no argument provided *)
+    "ta_testcases/ta11.txt"  (* Default if no argument provided *)
   in
   let chan = open_in filename in
   let lexbuf = Lexing.from_channel chan in

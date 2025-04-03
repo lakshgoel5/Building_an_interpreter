@@ -1,3 +1,2 @@
-Type checking passed successfully!
 8.000000
 1.041393

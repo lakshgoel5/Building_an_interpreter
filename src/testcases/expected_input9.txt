@@ -1,2 +1,1 @@
-Type checking passed successfully!
 Error: Vector should not be NULL/zero

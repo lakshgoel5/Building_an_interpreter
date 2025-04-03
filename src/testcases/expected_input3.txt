@@ -1,9 +1,6 @@
-Type checking passed successfully!
 10
 -10
 2.300000
 2.073644
-1.100000
-Vector of dimension 3: [2, 4, 5]
-5
-7
+1.320000
+Error: Type mismatch: expected vector int

@@ -1,5 +1,5 @@
 matrixf 3 3 A;
-A := Input();
+A := Input(ta4in.txt);
 if(det(A)!=0.0)
 then{
     matrixf 3 3 cofactor_matrix;
@@ -7,11 +7,12 @@ then{
     for(int i := 0; i<row(A); i:=i+1){
         for(int j:=0; j<cols(A); j:=j+1){
             matrixf 2 2 minor_matrix := minor(A,i,j);
-            cofactor_matrix[i,j] := -1.0 * det(minor_matrix);
+            cofactor_matrix[i,j] := pow(-1.0,(i+j)) * det(minor_matrix);
         };
     }; (*Comment*)(*Another*)
     matrixf 3 3 adjoint_of_matrix := transpose(cofactor_matrix);
-    matrixf 3 3 inverse_of_matrix := (1 / det(A))*adjoint_of_matrix;
+    matrixf 3 3 inverse_of_matrix := (1.0 / det(A))*adjoint_of_matrix;
+    Print(inverse_of_matrix);
 }
 else{
     raise(MatrixNotInvertible);

@@ -1,2 +1,1 @@
-Type checking passed successfully!
 2
