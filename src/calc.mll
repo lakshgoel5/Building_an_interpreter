@@ -11,8 +11,8 @@ let float = (((['0'-'9']+'.')|(['0'-'9']+'.'['0'-'9']+)|('.'['0'-'9']+))|((['0'-
 let filename_char = ['a'-'z''A'-'Z''0'-'9''_']['a'-'z''A'-'Z''0'-'9''_'''']*'.'['a'-'z''A'-'Z']+ (*Filenames start with letters, number or underscore and can contain letters, numbers, underscores, periods, and slashes*)
 let element = (float  | integer)
 
-let int_list = ((whitespace)*['['](whitespace)*integer(whitespace)*([','](whitespace)* integer)*(whitespace)*[']'])
-let float_list = ((whitespace)*['['](whitespace)* float(whitespace)* ([','](whitespace)* float)* (whitespace)*[']'])
+let int_list = ((whitespace)*['['](whitespace)*'-'?integer(whitespace)*([','](whitespace)* '-'? integer)*(whitespace)*[']'])
+let float_list = ((whitespace)*['['](whitespace)* '-'? float(whitespace)* ([','](whitespace)* '-'? float)* (whitespace)*[']'])
 let gen_list = ((whitespace)*['['](whitespace)* element (whitespace)*([','](whitespace)* element)* (whitespace)*[']'])
 let vector_int = (['1'-'9'] ['0'-'9']* as x )(whitespace)*(int_list as l)  (* 5[3,5,23,2,10] *)
 let vector_float = (['1'-'9'] ['0'-'9']* as x )(whitespace)*(float_list as l)  (* 2[3.4 ,38.2] *)

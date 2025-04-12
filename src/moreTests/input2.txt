@@ -3,7 +3,7 @@ int n;
 bool is_prime;
 int i;
 int dummyVar;
-n := 29;
+n := 1172;
 is_prime := true;
 i := 2;
 while((i * i) <= n) {

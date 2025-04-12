@@ -56,7 +56,7 @@ let filename =
     if not passed_typechecker then
       raise (Failure "Type checking failed. Exiting...")
     else
-      let _ = Interpreter.eval env ast in
+      let (_table, _) = Interpreter.eval_with_env env ast in
       close_in chan;
       ()
   with

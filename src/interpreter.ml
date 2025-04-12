@@ -641,11 +641,11 @@ let rec eval_with_env env ast =
     (match eval env e1 with
     | Const_Bool v1 ->
         if v1 then
-          let v2 = eval env e2 in
-          (env, v2)
+          let (new_env,v2) = eval_with_env env e2 in
+          (new_env, v2)
         else
-          let v3 = eval env e3 in
-          (env, v3)
+          let (new_env,v3) = eval_with_env env e3 in
+          (new_env, v3)
     | _ -> failwith "Type error: Expected a boolean expression in if condition")
 
   | While (e1, e2) ->

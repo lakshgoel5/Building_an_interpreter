@@ -3,7 +3,7 @@ int fib1;
 int fib2;
 int count;
 int next;
-n := 10;
+n := 12;
 fib1 := 0;
 fib2 := 1;
 count := 2;

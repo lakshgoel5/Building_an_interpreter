@@ -10,7 +10,7 @@ then{
             cofactor_matrix[i,j] := pow(-1.0,(i+j)) * det(minor_matrix);
         };
     }; (*Comment*)(*Another*)
-    matrixf 3 3 adjoint_of_matrix := transpose(cofactor_matrix);
+    matrixf 3 3 adjoint_of_matrix (*hello*):= transpose(cofactor_matrix);
     matrixf 3 3 inverse_of_matrix := (1.0 / det(A))*adjoint_of_matrix;
     Print(inverse_of_matrix);
 }

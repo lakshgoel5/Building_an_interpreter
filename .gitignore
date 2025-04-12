@@ -1,0 +1,7 @@
+*.cmi
+*.cmo
+*.exe
+*.o
+*.out
+*.mli
+*.output
