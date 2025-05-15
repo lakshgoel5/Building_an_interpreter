@@ -12,18 +12,6 @@ We are writing a programmig language that manipulates vectors and matrices. Our 
 - Finding the determinant of a matrix
 - Gaussian elimination
 
-## Flow
-- [X] Writing a Lexer
-- [X] Writing Grammer Rules
-- [X] Writing a Parser
-- [X] Building the AST
-- [ ] Implementing the operations
-- [ ] Writing tests
-
-## Tasks
-
-## Problems Faced
-
 ## Instructions to run
 1. Change Input file name in test.ml
 2. Run `make test_eval` to compile the code and test
